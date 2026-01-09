@@ -16,23 +16,11 @@
       "title": "Minimal home décor for your space",
       "targetUrl": "https://cozyvibebd.com/",
       "image": {
-        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk1.png",
-        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob1.png"
+        "desktop": "https://img.pathgriho.com/ads/dc1.gif",
+        "mobile": "https://img.pathgriho.com/ads/mc1.gif"
       },
       "status": "active",
       "weight": 2
-    },
-    {
-      "id": "cozy_02",
-      "ownerId": "cozy",
-      "title": "Create a cozy vibe at home",
-      "targetUrl": "https://cozyvibebd.com/",
-      "image": {
-        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk1.png",
-        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob1.png"
-      },
-      "status": "active",
-      "weight": 1
     },
     {
       "id": "fancy_01",
@@ -40,23 +28,11 @@
       "title": "Upgrade your desk setup",
       "targetUrl": "https://fancykeebs.com/",
       "image": {
-        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk2.png",
-        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob2.png"
+        "desktop": "https://img.pathgriho.com/ads/df1.gif",
+        "mobile": "https://img.pathgriho.com/ads/mf1.gif"
       },
       "status": "active",
       "weight": 2
-    },
-    {
-      "id": "fancy_02",
-      "ownerId": "fancy",
-      "title": "Desk accessories that feel premium",
-      "targetUrl": "https://fancykeebs.com/",
-      "image": {
-        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk2.png",
-        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob2.png"
-      },
-      "status": "active",
-      "weight": 1
     }
   ]
 }
