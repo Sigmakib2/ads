@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ads",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-09",
+  // "compatibility_flags": [
+  //   "nodejs_compat"
+  // ],
+  "vars": {
+    "CONFIG_URL": "https://raw.githubusercontent.com/Sigmakib2/ads/main/config.json"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "pathgriho-ads",
+      "id": "61ce27619b2741d1bd52567e887eb10e"
+    }
+  ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  // "d1_databases": [
+  //   {
+  //     "binding": "MY_DB",
+  //     "database_name": "my-database",
+  //     "database_id": ""
+  //   }
+  // ],
+  // "ai": {
+  //   "binding": "AI"
+  // },
+  // "observability": {
+  //   "enabled": true,
+  //   "head_sampling_rate": 1
+  // }
+}
