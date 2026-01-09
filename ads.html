@@ -1,0 +1,109 @@
+
+<div id="pg-ad-top" class="pg-ad-slot"></div>
+
+<div id="pg-ad-bottom" class="pg-ad-slot"></div>
+
+<style>
+  .pg-ad-card {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 12px;
+    text-decoration: none;
+  }
+  .pg-ad-card:hover { border-color: rgba(0,0,0,.18); }
+  .pg-ad-card img {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+  }
+  .pg-ad-meta { display: grid; gap: 6px; }
+  .pg-ad-label {
+    font-size: 12px;
+    opacity: .7;
+  }
+  .pg-ad-title {
+    font-size: 15px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: inherit;
+  }
+
+  @media (max-width: 520px) {
+    .pg-ad-card { grid-template-columns: 92px 1fr; }
+    .pg-ad-card img { width: 92px; height: 72px; }
+    .pg-ad-title { font-size: 14px; }
+  }
+</style>
+
+<script>
+(function () {
+  const WORKER_ORIGIN = "https://ads.sigmakib.workers.dev";
+
+  function getLabels() {
+    const nodes = document.querySelectorAll('.post-labels a, a[rel="tag"], .labels a');
+    const labels = [];
+    nodes.forEach(a => {
+      const t = (a.textContent || "").trim();
+      if (t) labels.push(t);
+    });
+    return [...new Set(labels)].slice(0, 12);
+  }
+
+  function renderAd(el, ad, labelText) {
+    if (!el || !ad) return;
+    el.innerHTML = `
+      <a class="pg-ad-card" href="${ad.clickUrl}" rel="nofollow sponsored" target="_blank">
+        <img src="${ad.imageUrl}" alt="">
+        <div class="pg-ad-meta">
+          <div class="pg-ad-label">${labelText}</div>
+          <div class="pg-ad-title">${ad.title}</div>
+        </div>
+      </a>
+    `;
+  }
+
+  async function loadAds() {
+    const topEl = document.getElementById("pg-ad-top");
+    const bottomEl = document.getElementById("pg-ad-bottom");
+
+    if (!topEl && !bottomEl) return;
+
+    const labels = getLabels();
+    const url = new URL(WORKER_ORIGIN + "/v1/ads");
+    if (labels.length) url.searchParams.set("labels", labels.join(","));
+
+    try {
+      const res = await fetch(url.toString(), { mode: "cors" });
+      if (!res.ok) throw new Error("Ad request failed");
+      const data = await res.json();
+      const lastTop = sessionStorage.getItem("pg_last_top");
+      const lastBottom = sessionStorage.getItem("pg_last_bottom");
+
+
+
+      if (data.top && topEl) {
+        sessionStorage.setItem("pg_last_top", data.top.id);
+        renderAd(topEl, data.top, "Recommended");
+      }
+      if (data.bottom && bottomEl) {
+        sessionStorage.setItem("pg_last_bottom", data.bottom.id);
+        renderAd(bottomEl, data.bottom, "You may like");
+      }
+    } catch (e) {
+
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadAds);
+  } else {
+    loadAds();
+  }
+})();
+</script>

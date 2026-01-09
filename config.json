@@ -1,60 +1,62 @@
 {
   "owners": [
-    { "id": "cozy", "name": "CozyVibeBD" },
-    { "id": "fancy", "name": "FancyKeebs" }
+    {
+      "id": "cozy",
+      "name": "CozyVibeBD"
+    },
+    {
+      "id": "fancy",
+      "name": "FancyKeebs"
+    }
   ],
   "ads": [
     {
       "id": "cozy_01",
       "ownerId": "cozy",
-      "title": "Minimal home décor picks",
-      "targetUrl": "https://cozyvibebd.com/collections/home-decor",
+      "title": "Minimal home décor for your space",
+      "targetUrl": "https://cozyvibebd.com/",
       "image": {
-        "desktop": "https://YOUR_IMAGE_HOST/cozy_01_desktop.jpg",
-        "mobile": "https://YOUR_IMAGE_HOST/cozy_01_mobile.jpg"
+        "desktop": "https://via.placeholder.com/600x400?text=CozyVibe+Desktop",
+        "mobile": "https://via.placeholder.com/400x300?text=CozyVibe+Mobile"
       },
       "status": "active",
-      "weight": 2,
-      "tags": ["home", "decor", "aesthetic"]
+      "weight": 2
     },
     {
       "id": "cozy_02",
       "ownerId": "cozy",
-      "title": "Cozy lighting for your room",
-      "targetUrl": "https://cozyvibebd.com/collections/lighting",
+      "title": "Create a cozy vibe at home",
+      "targetUrl": "https://cozyvibebd.com/",
       "image": {
-        "desktop": "https://YOUR_IMAGE_HOST/cozy_02_desktop.jpg",
-        "mobile": "https://YOUR_IMAGE_HOST/cozy_02_mobile.jpg"
+        "desktop": "https://via.placeholder.com/600x400?text=CozyVibe+Desktop+2",
+        "mobile": "https://via.placeholder.com/400x300?text=CozyVibe+Mobile+2"
       },
       "status": "active",
-      "weight": 1,
-      "tags": ["room", "lighting", "home"]
+      "weight": 1
     },
     {
       "id": "fancy_01",
       "ownerId": "fancy",
       "title": "Upgrade your desk setup",
-      "targetUrl": "https://fancykeebs.com/collections/keyboards",
+      "targetUrl": "https://fancykeebs.com/",
       "image": {
-        "desktop": "https://YOUR_IMAGE_HOST/fancy_01_desktop.jpg",
-        "mobile": "https://YOUR_IMAGE_HOST/fancy_01_mobile.jpg"
+        "desktop": "https://via.placeholder.com/600x400?text=FancyKeebs+Desktop",
+        "mobile": "https://via.placeholder.com/400x300?text=FancyKeebs+Mobile"
       },
       "status": "active",
-      "weight": 3,
-      "tags": ["desk", "keyboard", "workspace"]
+      "weight": 2
     },
     {
       "id": "fancy_02",
       "ownerId": "fancy",
-      "title": "Desk accessories you’ll love",
-      "targetUrl": "https://fancykeebs.com/collections/accessories",
+      "title": "Desk accessories that feel premium",
+      "targetUrl": "https://fancykeebs.com/",
       "image": {
-        "desktop": "https://YOUR_IMAGE_HOST/fancy_02_desktop.jpg",
-        "mobile": "https://YOUR_IMAGE_HOST/fancy_02_mobile.jpg"
+        "desktop": "https://via.placeholder.com/600x400?text=FancyKeebs+Desktop+2",
+        "mobile": "https://via.placeholder.com/400x300?text=FancyKeebs+Mobile+2"
       },
       "status": "active",
-      "weight": 1,
-      "tags": ["desk", "workspace", "setup"]
+      "weight": 1
     }
   ]
 }

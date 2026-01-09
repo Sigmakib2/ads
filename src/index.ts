@@ -1,24 +1,9 @@
-/**
- * Cloudflare Worker (Hono.js) — Pathgriho internal ads
- * - Config stored in public GitHub JSON (owners + ads)
- * - 2 positions: top + bottom
- * - Fairness: 50/50 share of TOP exposure per device (mobile/desktop), tracked in KV
- * - Bottom automatically gets the other owner
- * - Multiple ads per owner, weighted rotation
- * - Mobile/desktop creatives
- * - Click tracking + redirect via /c/:adId
- *
- * Deploy:
- * 1) `npm i hono`
- * 2) Wrangler bindings: KV + env vars (see bottom)
- */
-
 import { Hono } from "hono";
 
-type OwnerId = "cozy" | "fancy" | string;
+type OwnerId = string;
 
 type Owner = {
-  id: OwnerId;
+  id: OwnerId; // e.g. "cozy", "fancy"
   name: string;
 };
 
@@ -30,47 +15,42 @@ type Ad = {
   image: { desktop: string; mobile: string };
   status: "active" | "inactive";
   weight?: number; // default 1
-  tags?: string[]; // optional, match against blogger labels
 };
 
 type AdsConfig = {
-  owners: Owner[];
+  owners: Owner[]; // must contain at least 2 owners
   ads: Ad[];
 };
 
 type Env = {
   KV: KVNamespace;
 
-  // Public raw GitHub URL to config.json (contains owners + ads)
-  CONFIG_URL: string;
-
-  // Only allow your Blogger origin (recommended): https://www.pathgriho.com
-  ALLOWED_ORIGIN: string;
-
-  // Random secret string for click tokens
-  CLICK_TOKEN_SECRET: string;
-
-  // KV cache TTL for config in seconds (e.g., 900)
-  CONFIG_CACHE_TTL_SECONDS: string;
-
-  // Counter key TTL in seconds (e.g., 60*60*24*40)
-  COUNTER_TTL_SECONDS: string;
-
-  // Use "Asia/Dhaka" for date bucketing (recommended)
-  DATE_TIMEZONE: string; // "Asia/Dhaka"
+  CONFIG_URL: string;              // raw github config.json
+  ALLOWED_ORIGIN: string;          // https://www.pathgriho.com
+  CLICK_TOKEN_SECRET: string;      // long random
+  CONFIG_CACHE_TTL_SECONDS: string; // e.g. "900"
+  COUNTER_TTL_SECONDS: string;     // e.g. "3456000" (~40 days)
+  DATE_TIMEZONE: string;           // "Asia/Dhaka"
 };
 
 const app = new Hono<{ Bindings: Env }>();
 
-/* ----------------------------- Utilities ----------------------------- */
+/* ----------------------------- CORS ----------------------------- */
 
 function setCorsHeaders(c: any) {
-  const origin = c.env.ALLOWED_ORIGIN;
-  c.res.headers.set("Access-Control-Allow-Origin", origin);
+  c.res.headers.set("Access-Control-Allow-Origin", c.env.ALLOWED_ORIGIN);
   c.res.headers.set("Vary", "Origin");
   c.res.headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
   c.res.headers.set("Access-Control-Allow-Headers", "Content-Type");
 }
+
+app.use("*", async (c, next) => {
+  setCorsHeaders(c);
+  if (c.req.method === "OPTIONS") return c.body(null, 204);
+  return next();
+});
+
+/* ----------------------------- Helpers ----------------------------- */
 
 function isMobile(req: Request): boolean {
   const ch = req.headers.get("Sec-CH-UA-Mobile");
@@ -90,17 +70,7 @@ function weightedRandom<T extends { weight?: number }>(items: T[]): T {
   return items[items.length - 1];
 }
 
-function normalizeLabels(raw: string | null): string[] {
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-// Date bucket in Asia/Dhaka (or env timezone)
 function dayBucket(tz: string): string {
-  // Using Intl for timezone formatting
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: tz,
     year: "numeric",
@@ -119,7 +89,7 @@ async function kvGetInt(kv: KVNamespace, key: string): Promise<number> {
   return v ? parseInt(v, 10) || 0 : 0;
 }
 
-// Non-atomic increment (acceptable for your traffic)
+// Non-atomic increment (OK for your traffic)
 async function kvIncr(
   kv: KVNamespace,
   key: string,
@@ -132,7 +102,7 @@ async function kvIncr(
   return next;
 }
 
-// Minimal HMAC token
+// HMAC token (minimal)
 async function signToken(secret: string, payload: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -155,7 +125,6 @@ async function verifyToken(secret: string, payload: string, token: string) {
   return expected === token;
 }
 
-// Config caching in KV
 async function getConfig(c: any): Promise<AdsConfig> {
   const cacheKey = "cfg:config";
   const ttl = parseInt(c.env.CONFIG_CACHE_TTL_SECONDS || "900", 10);
@@ -173,85 +142,61 @@ async function getConfig(c: any): Promise<AdsConfig> {
   return JSON.parse(text) as AdsConfig;
 }
 
-// Simple tag match: if any ad tag matches any label
-function filterByLabels(ads: Ad[], labels: string[]): Ad[] {
-  if (!labels.length) return ads;
-  const labelSet = new Set(labels);
-  const matched = ads.filter((a) =>
-    (a.tags || []).some((t) => labelSet.has(String(t).toLowerCase()))
-  );
-  return matched.length ? matched : ads; // fallback if no matches
-}
-
-/* ----------------------------- Middleware ----------------------------- */
-
-app.use("*", async (c, next) => {
-  setCorsHeaders(c);
-  if (c.req.method === "OPTIONS") return c.body(null, 204);
-  return next();
-});
-
 /* ----------------------------- Routes ----------------------------- */
 
 /**
- * GET /v1/ads?labels=home,decor
- * Returns BOTH top and bottom ads in one response (recommended).
- *
- * Fairness: decides who gets TOP based on KV counters (per day + device)
- * Bottom gets the other owner.
+ * GET /v1/ads
+ * Returns both top and bottom ads in one response.
+ * Fairness: 50/50 TOP exposure per device (mobile/desktop), tracked in KV.
  */
 app.get("/v1/ads", async (c) => {
   const device = isMobile(c.req.raw) ? "mobile" : "desktop";
-  const labels = normalizeLabels(c.req.query("labels"));
   const tz = c.env.DATE_TIMEZONE || "Asia/Dhaka";
   const day = dayBucket(tz);
 
-  const counterTtl = parseInt(c.env.COUNTER_TTL_SECONDS || "3456000", 10); // ~40 days
-  const baseTopKey = `imp:${day}:top:${device}`; // + :ownerId
+  const counterTtl = parseInt(c.env.COUNTER_TTL_SECONDS || "3456000", 10);
 
   const config = await getConfig(c);
   const owners = config.owners;
-  if (owners.length < 2) return c.json({ error: "Need 2 owners in config" }, 500);
 
-  // For your scenario: you and Rabiul. If more owners in future, you can expand logic.
+  if (!owners || owners.length < 2) {
+    return c.json({ error: "Config must have at least 2 owners" }, 500);
+  }
+
+  // You said only 2 companies; we use the first two owners from config.
   const ownerA = owners[0];
   const ownerB = owners[1];
 
+  // Decide who gets TOP based on who has fewer TOP impressions today (per device)
+  const baseTopKey = `imp:${day}:top:${device}`; // + :ownerId
   const topCountA = await kvGetInt(c.env.KV, `${baseTopKey}:${ownerA.id}`);
   const topCountB = await kvGetInt(c.env.KV, `${baseTopKey}:${ownerB.id}`);
 
-  // Decide who gets TOP (who is behind/equal)
   const topOwner = topCountA <= topCountB ? ownerA : ownerB;
   const bottomOwner = topOwner.id === ownerA.id ? ownerB : ownerA;
 
-  // Eligible ads per owner
   const activeAds = config.ads.filter((a) => a.status === "active");
-  let topAds = activeAds.filter((a) => a.ownerId === topOwner.id);
-  let bottomAds = activeAds.filter((a) => a.ownerId === bottomOwner.id);
 
-  topAds = filterByLabels(topAds, labels);
-  bottomAds = filterByLabels(bottomAds, labels);
+  const topPool = activeAds.filter((a) => a.ownerId === topOwner.id);
+  const bottomPool = activeAds.filter((a) => a.ownerId === bottomOwner.id);
 
-  if (!topAds.length || !bottomAds.length) {
+  if (!topPool.length || !bottomPool.length) {
     return c.json(
       {
-        error: "No eligible ads for one/both owners",
+        error: "No active ads for one/both owners",
         details: {
           topOwner: topOwner.id,
           bottomOwner: bottomOwner.id,
-          topAds: topAds.length,
-          bottomAds: bottomAds.length,
+          topPool: topPool.length,
+          bottomPool: bottomPool.length,
         },
       },
       404
     );
   }
 
-  // Select ads (weighted)
-  const topAd = weightedRandom(topAds);
-  const bottomAd = weightedRandom(bottomAds);
-
-  const origin = new URL(c.req.url).origin;
+  const topAd = weightedRandom(topPool);
+  const bottomAd = weightedRandom(bottomPool);
 
   // Track TOP impression for fairness
   await kvIncr(c.env.KV, `${baseTopKey}:${topOwner.id}`, 1, counterTtl);
@@ -260,7 +205,8 @@ app.get("/v1/ads", async (c) => {
   await kvIncr(c.env.KV, `imp:${day}:ad:${topAd.id}`, 1, counterTtl);
   await kvIncr(c.env.KV, `imp:${day}:ad:${bottomAd.id}`, 1, counterTtl);
 
-  // Click token payload binds to day+device+adId+position
+  const origin = new URL(c.req.url).origin;
+
   const payloadTop = `${day}|${device}|top|${topAd.id}`;
   const payloadBottom = `${day}|${device}|bottom|${bottomAd.id}`;
 
@@ -277,7 +223,6 @@ app.get("/v1/ads", async (c) => {
       device,
       topOwner: topOwner.id,
       bottomOwner: bottomOwner.id,
-      topCounts: { [ownerA.id]: topCountA, [ownerB.id]: topCountB },
     },
     top: {
       id: topAd.id,
@@ -297,8 +242,7 @@ app.get("/v1/ads", async (c) => {
 });
 
 /**
- * GET /c/:adId?t=...&pos=top|bottom&d=YYYY-MM-DD&dev=mobile|desktop
- * Tracks click + redirects to targetUrl with UTM params
+ * GET /c/:adId?... -> tracks click and redirects
  */
 app.get("/c/:adId", async (c) => {
   const adId = c.req.param("adId");
@@ -317,7 +261,6 @@ app.get("/c/:adId", async (c) => {
 
   const counterTtl = parseInt(c.env.COUNTER_TTL_SECONDS || "3456000", 10);
 
-  // Track click
   await kvIncr(c.env.KV, `clk:${day}:ad:${adId}`, 1, counterTtl);
   await kvIncr(c.env.KV, `clk:${day}:${pos}:${dev}:${ad.ownerId}`, 1, counterTtl);
 
@@ -331,13 +274,16 @@ app.get("/c/:adId", async (c) => {
 });
 
 /**
- * Optional debug endpoint (remove in production or protect):
- * GET /v1/stats?day=YYYY-MM-DD
+ * Optional debug stats:
+ * GET /v1/stats?day=YYYY-MM-DD&dev=mobile|desktop
  */
 app.get("/v1/stats", async (c) => {
-  const day = c.req.query("day") || dayBucket(c.env.DATE_TIMEZONE || "Asia/Dhaka");
+  const tz = c.env.DATE_TIMEZONE || "Asia/Dhaka";
+  const day = c.req.query("day") || dayBucket(tz);
   const dev = c.req.query("dev") || "mobile";
-  const owners = (await getConfig(c)).owners.slice(0, 2);
+
+  const config = await getConfig(c);
+  const owners = config.owners.slice(0, 2);
 
   const baseTopKey = `imp:${day}:top:${dev}`;
   const out: any = { day, dev, top: {} };
@@ -348,16 +294,3 @@ app.get("/v1/stats", async (c) => {
 });
 
 export default app;
-
-/**
- * Wrangler env vars you need:
- * CONFIG_URL = "https://raw.githubusercontent.com/<you>/<repo>/main/config.json"
- * ALLOWED_ORIGIN = "https://www.pathgriho.com"
- * CLICK_TOKEN_SECRET = "<random-long-string>"
- * CONFIG_CACHE_TTL_SECONDS = "900"
- * COUNTER_TTL_SECONDS = "3456000"
- * DATE_TIMEZONE = "Asia/Dhaka"
- *
- * KV binding:
- * KV = <your_kv_namespace>
- */
