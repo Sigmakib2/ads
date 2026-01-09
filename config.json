@@ -16,8 +16,8 @@
       "title": "Minimal home décor for your space",
       "targetUrl": "https://cozyvibebd.com/",
       "image": {
-        "desktop": "https://via.placeholder.com/600x400?text=CozyVibe+Desktop",
-        "mobile": "https://via.placeholder.com/400x300?text=CozyVibe+Mobile"
+        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk1.png",
+        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob1.png"
       },
       "status": "active",
       "weight": 2
@@ -28,8 +28,8 @@
       "title": "Create a cozy vibe at home",
       "targetUrl": "https://cozyvibebd.com/",
       "image": {
-        "desktop": "https://via.placeholder.com/600x400?text=CozyVibe+Desktop+2",
-        "mobile": "https://via.placeholder.com/400x300?text=CozyVibe+Mobile+2"
+        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk1.png",
+        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob1.png"
       },
       "status": "active",
       "weight": 1
@@ -40,8 +40,8 @@
       "title": "Upgrade your desk setup",
       "targetUrl": "https://fancykeebs.com/",
       "image": {
-        "desktop": "https://via.placeholder.com/600x400?text=FancyKeebs+Desktop",
-        "mobile": "https://via.placeholder.com/400x300?text=FancyKeebs+Mobile"
+        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk2.png",
+        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob2.png"
       },
       "status": "active",
       "weight": 2
@@ -52,8 +52,8 @@
       "title": "Desk accessories that feel premium",
       "targetUrl": "https://fancykeebs.com/",
       "image": {
-        "desktop": "https://via.placeholder.com/600x400?text=FancyKeebs+Desktop+2",
-        "mobile": "https://via.placeholder.com/400x300?text=FancyKeebs+Mobile+2"
+        "desktop": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/desk2.png",
+        "mobile": "https://raw.githubusercontent.com/Sigmakib2/ads/refs/heads/main/ads/mob2.png"
       },
       "status": "active",
       "weight": 1
