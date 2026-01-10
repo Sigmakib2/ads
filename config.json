@@ -16,8 +16,8 @@
       "title": "Minimal home décor for your space",
       "targetUrl": "https://cozyvibebd.com/",
       "image": {
-        "desktop": "https://img.pathgriho.com/ads/dc1.gif",
-        "mobile": "https://img.pathgriho.com/ads/mc1.gif"
+        "desktop": "https://img.pathgriho.com/ads/cvd1.jpeg",
+        "mobile": "https://img.pathgriho.com/ads/cvm1.jpeg"
       },
       "status": "active",
       "weight": 2
@@ -25,11 +25,23 @@
     {
       "id": "fancy_01",
       "ownerId": "fancy",
-      "title": "Upgrade your desk setup",
-      "targetUrl": "https://fancykeebs.com/",
+      "title": "IEM",
+      "targetUrl": "https://fancykeebs.com/products/kz-edx-lite-the-super-linear-dynamic-driver-iem",
       "image": {
-        "desktop": "https://img.pathgriho.com/ads/df1.gif",
-        "mobile": "https://img.pathgriho.com/ads/mf1.gif"
+        "desktop": "https://img.pathgriho.com/ads/fkd1.jpeg",
+        "mobile": "https://img.pathgriho.com/ads/fkm1.jpeg"
+      },
+      "status": "active",
+      "weight": 2
+    },
+    {
+      "id": "fancy_02",
+      "ownerId": "fancy",
+      "title": "CAR",
+      "targetUrl": "https://fancykeebs.com/products/kz-edx-lite-the-super-linear-dynamic-driver-iem",
+      "image": {
+        "desktop": "https://img.pathgriho.com/ads/fwd1.jpeg",
+        "mobile": "https://img.pathgriho.com/ads/fwm1.jpeg"
       },
       "status": "active",
       "weight": 2

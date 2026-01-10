@@ -9,18 +9,7 @@
 "vars": {
   "CONFIG_URL": "https://raw.githubusercontent.com/Sigmakib2/ads/main/config.json",
   "ALLOWED_ORIGIN": "https://www.pathgriho.com",
-  "CLICK_TOKEN_SECRET": "REPLACE_WITH_A_LONG_RANDOM_SECRET",
-  "CONFIG_CACHE_TTL_SECONDS": "900*****",
-  "COUNTER_TTL_SECONDS": "3456000",
-  "DATE_TIMEZONE": "Asia/Dhaka"
-},
-
-  "kv_namespaces": [
-    {
-      "binding": "KV",
-      "id": "61c****7e887eb10e"
-    }
-  ],
+}
   // "r2_buckets": [
   //   {
   //     "binding": "MY_BUCKET",
